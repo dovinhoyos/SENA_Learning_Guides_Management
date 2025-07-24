@@ -13,3 +13,7 @@ def create_guide(title, description, program, file_storage, instructor):
     )
     guide.save()
     return guide
+
+
+def list_all_guides():
+    return Guide.objects().select_related()

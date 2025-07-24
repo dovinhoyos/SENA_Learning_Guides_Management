@@ -27,3 +27,10 @@ curl -X POST http://localhost:5000/guides/upload \
         -F "program=Desarrollo de Software" \
         -F "file=@/Users/arboleditas/Downloads/Actividad Final Python web con Flask.pdf"
 {
+
+curl -X GET http://localhost:5000/guides \
+        -b cookies.txt
+
+curl -X GET http://localhost:5000/guides/6881a6ced47e83a04d3c1d7c/pdf \
+        -b cookies.txt \
+        --output guia.pdf

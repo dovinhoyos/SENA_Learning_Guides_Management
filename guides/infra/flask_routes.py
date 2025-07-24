@@ -1,6 +1,10 @@
-from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
-from guides.domain.services import create_guide
+import io
+
+from flask import Blueprint, jsonify, request, send_file
+from flask_login import current_user, login_required
+
+from guides.domain.services import create_guide, list_all_guides
+from guides.models import Guide
 
 guides_bp = Blueprint("guides", __name__)
 
@@ -23,5 +27,43 @@ def upload_guide():
         ), 201
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
-    except Exception as e:
+    except Exception:
         return jsonify({"error": "Error al subir la guía"}), 500
+
+
+@guides_bp.route("/guides", methods=["GET"])
+@login_required
+def list_guides():
+    guides = list_all_guides()
+
+    result = []
+    for guide in guides:
+        result.append(
+            {
+                "id": str(guide.id),
+                "title": guide.title,
+                "description": guide.description,
+                "program": guide.program,
+                "instructor": guide.instructor.full_name,
+                "regional": guide.instructor.regional,
+                "created_at": guide.created_at.isoformat(),
+                "pdf_url": f"/guides/{str(guide.id)}/pdf",
+            }
+        )
+
+    return jsonify(result), 200
+
+
+@guides_bp.route("/guides/<guide_id>/pdf", methods=["GET"])
+@login_required
+def download_pdf(guide_id):
+    guide = Guide.objects(id=guide_id).first()
+    if not guide or not guide.file:
+        return jsonify({"error": "Guía no encontrada"}), 404
+
+    return send_file(
+        io.BytesIO(guide.file.read()),
+        mimetype="application/pdf",
+        download_name=guide.file.filename,
+        as_attachment=False,  # Cambialo a True si querés que se descargue
+    )
