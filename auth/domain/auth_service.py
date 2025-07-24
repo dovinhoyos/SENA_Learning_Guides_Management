@@ -2,6 +2,7 @@ import secrets
 from auth.models import Instructor, RegionalEnum
 from shared.config import mail
 from flask_mail import Message
+from werkzeug.security import generate_password_hash
 
 
 def generate_password():
@@ -27,12 +28,13 @@ def register_instructor(full_name, email, regional_str):
         raise ValueError("Ya existe un instructor con ese correo.")
 
     password = generate_password()
+    password_hashed = generate_password_hash(password)
 
     instructor = Instructor(
         full_name=full_name,
         email=email,
         regional=regional_str,
-        password=password,  # Hashear después
+        password=password_hashed,
     )
     instructor.save()
 
