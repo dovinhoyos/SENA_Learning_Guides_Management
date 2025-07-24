@@ -1,6 +1,7 @@
 import enum
 from mongoengine import Document, StringField, EmailField
 from flask_login import UserMixin
+from shared.config import login_manager
 
 
 class RegionalEnum(enum.Enum):
@@ -19,3 +20,8 @@ class Instructor(Document, UserMixin):
 
     def get_id(self):
         return str(self.id)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Instructor.objects(id=user_id).first()
